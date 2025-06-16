@@ -28,11 +28,20 @@ function App() {
 
       setWeather(response.data);
       setInputCity("");
-    } catch (err) {
-        console.error("Error fetching weather:", err);
-        setError(err.message || "City not found or API error.");
-        setWeather(null);
-    } finally {
+    } 
+      catch (err) {
+    console.error("Error fetching weather:", err);
+
+    if (err.response && err.response.status === 400) {
+      setError("No location found.");
+    } else {
+      setError("Something went wrong. Please try again.");
+    }
+
+    setWeather(null);
+}
+ 
+      finally {
       setLoading(false);
     }
   }
