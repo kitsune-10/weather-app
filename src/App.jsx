@@ -1,52 +1,56 @@
-import React, { useState } from 'react';
+// App.js (Weather App)
+import React, { useEffect } from 'react';
 import axios from 'axios';
 import './App.css';
+import useWeatherStore from './store';
 
 function App() {
-  const [inputCity, setInputCity] = useState("");
-  const [weather, setWeather] = useState(null);
-  const [error, setError] = useState(""); 
-  const [loading, setLoading] = useState(false); 
+  const {
+    inputCity,
+    weather,
+    error,
+    loading,
+    setInputCity,
+    setWeather,
+    setError,
+    setLoading,
+  } = useWeatherStore();
 
   const handleKeyDown = async (e) => {
-  if (e.key === "Enter" && inputCity.trim()) {
-    setLoading(true);
-    setError("");
+    if (e.key === "Enter" && inputCity.trim()) {
+      setLoading(true);
+      setError("");
 
-    try {
-      const encodedCity = encodeURIComponent(inputCity.trim());
-      const url = `https://api.weatherapi.com/v1/current.json?key=cee0ed6801054429819191809252805&q=${encodedCity}`;
+      try {
+        const encodedCity = encodeURIComponent(inputCity.trim());
+        const url = `https://api.weatherapi.com/v1/current.json?key=cee0ed6801054429819191809252805&q=${encodedCity}`;
 
-      const response = await axios.get(url);
+        const response = await axios.get(url);
 
-      const apiCity = response.data?.location?.name?.toLowerCase();
-      const userInput = inputCity.trim().toLowerCase();
+        const apiCity = response.data?.location?.name?.toLowerCase();
+        const userInput = inputCity.trim().toLowerCase();
 
-      if (apiCity !== userInput) {
-        throw new Error(`No exact match found for "${inputCity}".`);
+        if (apiCity !== userInput) {
+          throw new Error(`No exact match found for "${inputCity}".`);
+        }
+
+        setWeather(response.data);
+        setInputCity("");
+      } catch (err) {
+        console.error("Error fetching weather:", err);
+
+        if (err.response && err.response.status === 400) {
+          setError("No location found.");
+        } else {
+          setError("Something went wrong. Please try again.");
+        }
+
+        setWeather(null);
+      } finally {
+        setLoading(false);
       }
-
-      setWeather(response.data);
-      setInputCity("");
-    } 
-      catch (err) {
-    console.error("Error fetching weather:", err);
-
-    if (err.response && err.response.status === 400) {
-      setError("No location found.");
-    } else {
-      setError("Something went wrong. Please try again.");
     }
-
-    setWeather(null);
-}
- 
-      finally {
-      setLoading(false);
-    }
-  }
-};
-
+  };
 
   const handleInputChange = (e) => {
     setInputCity(e.target.value);
@@ -55,7 +59,7 @@ function App() {
   return (
     <div className="app">
       <div className="search">
-        <input 
+        <input
           type="text"
           id="inputLocation"
           value={inputCity}
@@ -66,12 +70,10 @@ function App() {
         />
       </div>
 
-      {loading && (
-      <div className="spinner"></div>
-    )}
+      {loading && <div className="spinner"></div>}
 
       {error && (
-        <div className='error'>
+        <div className="error">
           <p>{error}</p>
         </div>
       )}
@@ -83,7 +85,8 @@ function App() {
               <p>{weather.location.name}, {weather.location.country}</p>
             </div>
             <div className="temp">
-                <br></br><p>Temperature</p>
+              <br></br>
+              <p>Temperature</p>
               <h1>{weather.current.temp_c}°C</h1>
             </div>
             <div className="wind">
